@@ -153,6 +153,19 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 3] = 0xFF; 
                 bmpPtr += 4;
             }
+        } else if (bmpType === "mono1") {
+            while (bmpPtr < maxBmpPtr - 28 && dataPtr < maxDataPtr) {
+                var b = this.reader.byteAt(dataPtr++);
+                var bit = 7;
+                do {
+                    var col = ((b & (1 << bit)) != 0) ? 0xFF : 0;
+                    bmpData[bmpPtr] = col;
+                    bmpData[bmpPtr + 1] = col;
+                    bmpData[bmpPtr + 2] = col;
+                    bmpData[bmpPtr + 3] = 0xFF; 
+                    bmpPtr += 4;
+                } while (--bit >= 0);
+            }
         } 
 
     };
