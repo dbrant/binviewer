@@ -41,6 +41,13 @@
                 $("#saveJpgLink")[0].href = $("#previewCanvas")[0].toDataURL("image/jpeg");
             });
 
+            $("#udBmpScale").on("change", function(event) {
+                
+                var canvas = $("#previewCanvas")[0];
+                var scaleVal = $("#udBmpScale")[0].value;
+                canvas.style.transform = "scale(" + scaleVal + ")";
+
+            });
             $("#udBmpWidth").on("change", function(event) {
                 renderCurrentBitmap();
             });
@@ -175,10 +182,13 @@
     </select>
     <br />
 
-    <label for="udBmpWidth">Width:</label><input name="udBmpWidth" id="udBmpWidth" type="number" min="0" max="8192" step="1" value="320">
+    <label for="udBmpWidth">Width:</label> <input name="udBmpWidth" id="udBmpWidth" type="number" min="0" max="8192" step="1" value="320">
     <br />
 
-    <label for="udFileOffset">Offset:</label><input name="udFileOffset" id="udFileOffset" type="number" min="0" max="2147483648" step="1" value="0">
+    <label for="udBmpScale">Scale:</label> <input name="udBmpScale" id="udBmpScale" type="number" min="1" max="16" step="1" value="1">
+    <br />
+
+    <label for="udFileOffset">Offset:</label> <input name="udFileOffset" id="udFileOffset" type="number" min="0" max="2147483648" step="1" value="0">
     <br />
 
     <input type="range" min="0" max="10000" value="0" id="rangeFileOffset" style="width: 100%;">
@@ -190,7 +200,7 @@
     <div class="previewcontainer">
         <div id="holder" style="height: 480px;">
             <span id="drophint">Drag-and-drop a file here</span>
-            <canvas class="hidden" id="previewCanvas" style="width: 100%; height: 100%;"></canvas>
+            <canvas id="previewCanvas"></canvas>
         </div>
 
         <div style="text-align:right">
