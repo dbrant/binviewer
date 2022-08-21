@@ -127,6 +127,24 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 3] = this.reader.byteAt(dataPtr++);
                 bmpPtr += 4;
             }
+        } else if (bmpType === "argb32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                bmpData[bmpPtr + 3] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpPtr += 4;
+            }
+        } else if (bmpType === "565") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 2) {
+                var c = this.reader.byteAt(dataPtr++);
+                c = (this.reader.byteAt(dataPtr++) << 8) | c;
+                bmpData[bmpPtr] = ((c >> 11) & 0x1F) << 3;
+                bmpData[bmpPtr + 1] = ((c >> 5) & 0x3F) << 2;
+                bmpData[bmpPtr + 2] = (c & 0x1F) << 3;
+                bmpData[bmpPtr + 3] = 0xFF;
+                bmpPtr += 4;
+            }
         } else if (bmpType === "grey8") {
             while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr) {
                 var b = this.reader.byteAt(dataPtr++);
