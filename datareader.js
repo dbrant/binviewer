@@ -139,13 +139,12 @@ var FileBmpRenderer = function(dReader) {
         } else if (bmpType === "ega4") {
             while (bmpPtr < maxBmpPtr - 4 && dataPtr < maxDataPtr) {
                 var b = this.reader.byteAt(dataPtr++);
-                var col = this.egaColors[b & 0xF];
+                var col = this.egaColors[(b >> 4) & 0xF];
                 bmpData[bmpPtr] = ((col >> 16) & 0xFF);
                 bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
                 bmpData[bmpPtr + 2] = (col & 0xFF);
                 bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
-                b >>= 4;
                 col = this.egaColors[b & 0xF];
                 bmpData[bmpPtr] = ((col >> 16) & 0xFF);
                 bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
