@@ -87,6 +87,9 @@ var DataReader = function(dView) {
 var FileBmpRenderer = function(dReader) {
     this.reader = dReader;
 
+    this.egaColors = [ 0x0, 0x0000AA, 0x00AA00, 0x00AAAA, 0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
+        0x555555, 0x5555FF, 0x55FF55, 0x55FFFF, 0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF ];
+
     this.length = function() {
         return this.reader.length();
     }
@@ -133,7 +136,24 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 3] = 0xFF; 
                 bmpPtr += 4;
             }
-        }
+        } else if (bmpType === "ega4") {
+            while (bmpPtr < maxBmpPtr - 4 && dataPtr < maxDataPtr) {
+                var b = this.reader.byteAt(dataPtr++);
+                var col = this.egaColors[b & 0xF];
+                bmpData[bmpPtr] = ((col >> 16) & 0xFF);
+                bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
+                bmpData[bmpPtr + 2] = (col & 0xFF);
+                bmpData[bmpPtr + 3] = 0xFF; 
+                bmpPtr += 4;
+                b >>= 4;
+                col = this.egaColors[b & 0xF];
+                bmpData[bmpPtr] = ((col >> 16) & 0xFF);
+                bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
+                bmpData[bmpPtr + 2] = (col & 0xFF);
+                bmpData[bmpPtr + 3] = 0xFF; 
+                bmpPtr += 4;
+            }
+        } 
 
     };
 
