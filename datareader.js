@@ -133,7 +133,7 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr] = b;
                 bmpData[bmpPtr + 1] = b;
                 bmpData[bmpPtr + 2] = b;
-                bmpData[bmpPtr + 3] = 0xFF; 
+                bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
             }
         } else if (bmpType === "ega4") {
@@ -143,14 +143,14 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr] = ((col >> 16) & 0xFF);
                 bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
                 bmpData[bmpPtr + 2] = (col & 0xFF);
-                bmpData[bmpPtr + 3] = 0xFF; 
+                bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
                 b >>= 4;
                 col = this.egaColors[b & 0xF];
                 bmpData[bmpPtr] = ((col >> 16) & 0xFF);
                 bmpData[bmpPtr + 1] = ((col >> 8) & 0xFF);
                 bmpData[bmpPtr + 2] = (col & 0xFF);
-                bmpData[bmpPtr + 3] = 0xFF; 
+                bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
             }
         } else if (bmpType === "mono1") {
@@ -162,7 +162,20 @@ var FileBmpRenderer = function(dReader) {
                     bmpData[bmpPtr] = col;
                     bmpData[bmpPtr + 1] = col;
                     bmpData[bmpPtr + 2] = col;
-                    bmpData[bmpPtr + 3] = 0xFF; 
+                    bmpData[bmpPtr + 3] = 0xFF;
+                    bmpPtr += 4;
+                } while (--bit >= 0);
+            }
+        } else if (bmpType === "mono1inv") {
+            while (bmpPtr < maxBmpPtr - 28 && dataPtr < maxDataPtr) {
+                var b = this.reader.byteAt(dataPtr++);
+                var bit = 7;
+                do {
+                    var col = ((b & (1 << bit)) != 0) ? 0 : 0xFF;
+                    bmpData[bmpPtr] = col;
+                    bmpData[bmpPtr + 1] = col;
+                    bmpData[bmpPtr + 2] = col;
+                    bmpData[bmpPtr + 3] = 0xFF;
                     bmpPtr += 4;
                 } while (--bit >= 0);
             }
