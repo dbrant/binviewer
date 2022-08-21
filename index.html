@@ -147,15 +147,6 @@
             }
         }
 
-        function drawImageOnCanvas(imageSrc) {
-            var img = new Image;
-            img.src = imageSrc;
-            img.onload = function() {
-                resizeCanvas(img.width, img.height);
-                $("#previewCanvas")[0].getContext('2d').drawImage(img, 0, 0);
-            };
-        }
-
         function resizeCanvas(width, height) {
             var canvas = $("#previewCanvas")[0];
             canvas.width = width;

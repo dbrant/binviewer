@@ -18,22 +18,6 @@
 var DataReader = function(dView) {
     this.dataView = dView;
 
-    this.getCanvasContext = function() {
-        // override me
-    };
-
-    this.createImageData = function(bmpWidth, bmpHeight) {
-        return this.getCanvasContext().createImageData(bmpWidth, bmpHeight);
-    };
-
-    this.onGetPreviewImage = function(imageSrc) {
-        // override me
-    };
-
-    this.onGetPreviewBitmap = function(imageData) {
-        // override me
-    };
-
     this.length = function() {
         return this.dataView.byteLength;
     };
