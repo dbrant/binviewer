@@ -101,20 +101,6 @@
                 $("#previewCanvas").show();
                 clearCanvas();
 
-                reader.onGetPreviewImage = function(imageSrc) {
-                    if ( !format.canPreviewNatively) {
-                        drawImageOnCanvas(imageSrc);
-                    }
-                };
-                reader.onGetPreviewBitmap = function(imageData) {
-                    resizeCanvas(imageData.width, imageData.height);
-                    var context = $("#previewCanvas")[0].getContext('2d');
-                    context.putImageData(imageData, 0, 0);
-                };
-                reader.getCanvasContext = function() {
-                    return $("#previewCanvas")[0].getContext('2d');
-                };
-
                 renderCurrentBitmap();
             };
             reader.readAsArrayBuffer(file);
