@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset=utf-8>
+    <meta name="theme-color" content="#557755" />
+    <title>BinViewer</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Dancing Script:400&amp;subset=latin" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="datareader.js"></script>
+    <script>
+
+        var curRenderer;
+
+        $(document).ready(function() {
+
+            var holder = $("#holder");
+
+            if (typeof window.FileReader === 'undefined') {
+                setStatus('Error: File API and/or FileReader API not supported.');
+                $("#topContainer").hide();
+                return;
+            } else {
+                setStatus("");
+            }
+
+            $("#fileBrowseInput").on("change", function(event) {
+                processFile(event.target.files[0]);
+            });
+            $("#fileBrowseButton").on("click", function(event) {
+                document.getElementById("fileBrowseInput").click();
+            });
+
+            $("#savePngLink").on("click", function(event) {
+                $("#savePngLink")[0].href = $("#previewCanvas")[0].toDataURL("image/png");
+            });
+            $("#saveJpgLink").on("click", function(event) {
+                $("#saveJpgLink")[0].href = $("#previewCanvas")[0].toDataURL("image/jpeg");
+            });
+
+            $("#udFileOffset").on("change", function(event) {
+                renderCurrentBitmap();
+            });
+            $("#rangeFileOffset").on("input change", function(event) {
+                
+                var totalLength = curRenderer.length();
+                var rangeVal = $("#rangeFileOffset")[0].value;
+                var rangeMax = $("#rangeFileOffset")[0].max;
+
+                $("#udFileOffset")[0].value = parseInt((totalLength * rangeVal / rangeMax));
+                renderCurrentBitmap();
+
+            });
+            $("#selectBmpType").on("change", function(event) {
+                renderCurrentBitmap();
+            });
+
+            holder.on("dragover", function(event) {
+                        event.preventDefault();
+                        if(!holder.hasClass("dragover")) {
+                            holder.addClass("hover");
+                        }
+                    })
+                    .on("dragend", function(event) {
+                        event.preventDefault();
+                        holder.removeClass("hover");
+                    })
+                    .on("dragleave", function(event) {
+                        event.preventDefault();
+                        holder.removeClass("hover");
+                    })
+                    .on("drop", function(event) {
+                        event.preventDefault();
+                        holder.removeClass("hover");
+                        if (!event.originalEvent.dataTransfer) {
+                            console.log("No data found in dropped object.");
+                            return;
+                        }
+                        processFile(event.originalEvent.dataTransfer.files[0]);
+                    });
+        });
+
+        function processFile(file) {
+            setStatus("");
+            if(file == null){
+                setStatus("Whatever was dropped is not a file.");
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var buf = event.target.result;
+                var dataView = new DataView(buf);
+                var reader = new DataReader(dataView);
+                curRenderer = new FileBmpRenderer(reader)
+
+                $("#drophint").hide();
+                $("#previewCanvas").show();
+                clearCanvas();
+
+                reader.onGetPreviewImage = function(imageSrc) {
+                    if ( !format.canPreviewNatively) {
+                        drawImageOnCanvas(imageSrc);
+                    }
+                };
+                reader.onGetPreviewBitmap = function(imageData) {
+                    resizeCanvas(imageData.width, imageData.height);
+                    var context = $("#previewCanvas")[0].getContext('2d');
+                    context.putImageData(imageData, 0, 0);
+                };
+                reader.getCanvasContext = function() {
+                    return $("#previewCanvas")[0].getContext('2d');
+                };
+
+                renderCurrentBitmap();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderCurrentBitmap() {
+            var holder = $("#holder")[0];
+
+            var bmpType = $("#selectBmpType")[0].value;
+            var offset = $("#udFileOffset")[0].value;
+            var context = $("#previewCanvas")[0].getContext('2d');
+
+            var width = 320;
+            var height = holder.clientHeight;
+
+            resizeCanvas(width, height);
+
+            //this.reader.createImageData(imgWidth, imgHeight);
+            var imageData = context.getImageData(0, 0, width, height);
+
+            curRenderer.render(imageData, width, height, offset, bmpType);
+
+            context.putImageData(imageData, 0, 0);
+        }
+
+        function setStatus(status) {
+            var fileReaderStatus = $("#fileReaderStatus");
+            if (status.length > 0) {
+                fileReaderStatus.show();
+                fileReaderStatus.html(status);
+            } else {
+                fileReaderStatus.hide();
+            }
+        }
+
+        function drawImageOnCanvas(imageSrc) {
+            var img = new Image;
+            img.src = imageSrc;
+            img.onload = function() {
+                resizeCanvas(img.width, img.height);
+                $("#previewCanvas")[0].getContext('2d').drawImage(img, 0, 0);
+            };
+        }
+
+        function resizeCanvas(width, height) {
+            var canvas = $("#previewCanvas")[0];
+            canvas.width = width;
+            canvas.height = height;
+            //var scaledHeight = height > 320 ? 320 : height;
+            //var scaledWidth = width * (scaledHeight / height);
+            canvas.style.width = width.toString() + "px";
+            canvas.style.height = height.toString() + "px";
+        }
+
+        function clearCanvas() {
+            var canvas = $("#previewCanvas")[0];
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+    </script>
+</head>
+<body>
+
+<h1 class="centered">BinViewer</h1>
+
+<div class="status centered" id="fileReaderStatus">
+    Loading...
+</div>
+
+<div class="topcontainer">
+
+    <label for="selectBmpType">Bitmap type:</label>
+    <select name="selectBmpType" id="selectBmpType">
+        <option value="rgb24">24-bit RGB</option>
+        <option value="rgb32">32-bit RGB</option>
+        <option value="rgba32">32-bit RGBA</option>
+        <option value="grey8">8-bit greyscale</option>
+    </select>
+    <br />
+
+    <label for="udFileOffset">Offset:</label><input name="udFileOffset" id="udFileOffset" type="number" min="0" max="2147483648" step="1" value="0">
+    <br />
+
+    <input type="range" min="0" max="10000" value="0" id="rangeFileOffset" style="width: 100%;">
+
+</div>
+
+<div class="topcontainer" id="topContainer">
+
+    <div class="previewcontainer">
+        <div id="holder" style="height: 480px;">
+            <span id="drophint">Drag-and-drop a file here</span>
+            <canvas class="hidden" id="previewCanvas" style="width: 100%; height: 100%;"></canvas>
+        </div>
+
+        <div style="text-align:right">
+            <input type="file" id="fileBrowseInput" name="fileBrowse" style="display: none" />
+            <span class="buttonLink browseButton"><a href="#" id="fileBrowseButton">Browse...</a></span>
+            <span class="buttonLink"><a href="#" id="savePngLink" target="_blank">Save as PNG</a></span>
+            <span class="buttonLink"><a href="#" id="saveJpgLink" target="_blank">Save as JPG</a></span>
+        </div>
+    </div>
+
+</div>
+
+<div class="footer centered">
+    All processing is done client-side; nothing is uploaded anywhere.<br />
+    Copyright &copy; 2022 <a href="https://dmitrybrant.com">Dmitry Brant</a>. <a href="https://github.com/dbrant/BinViewer">Source code</a> on GitHub.
+</div>
+
+</body>
+</html>
