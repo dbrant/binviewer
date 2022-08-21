@@ -55,14 +55,14 @@
                 renderCurrentBitmap();
             });
             $("#rangeFileOffset").on("input change", function(event) {
-                
-                var totalLength = curRenderer.length();
-                var rangeVal = $("#rangeFileOffset")[0].value;
-                var rangeMax = $("#rangeFileOffset")[0].max;
+                if (curRenderer) {
+                    var totalLength = curRenderer.length();
+                    var rangeVal = $("#rangeFileOffset")[0].value;
+                    var rangeMax = $("#rangeFileOffset")[0].max;
 
-                $("#udFileOffset")[0].value = parseInt((totalLength * rangeVal / rangeMax));
-                renderCurrentBitmap();
-
+                    $("#udFileOffset")[0].value = parseInt((totalLength * rangeVal / rangeMax));
+                    renderCurrentBitmap();
+                }
             });
             $("#selectBmpType").on("change", function(event) {
                 renderCurrentBitmap();
@@ -116,6 +116,9 @@
         }
 
         function renderCurrentBitmap() {
+            if (!curRenderer) {
+                return;
+            }
             var holder = $("#holder")[0];
 
             var bmpType = $("#selectBmpType")[0].value;
@@ -180,10 +183,8 @@
         <option value="rgba32">32-bit RGBA</option>
         <option value="grey8">8-bit greyscale</option>
     </select>
-    <br />
 
     <label for="udBmpWidth">Width:</label> <input name="udBmpWidth" id="udBmpWidth" type="number" min="0" max="8192" step="1" value="320">
-    <br />
 
     <label for="udBmpScale">Scale:</label> <input name="udBmpScale" id="udBmpScale" type="number" min="1" max="16" step="1" value="1">
     <br />
@@ -199,8 +200,11 @@
 
     <div class="previewcontainer">
         <div id="holder" style="height: 480px;">
+
             <span id="drophint">Drag-and-drop a file here</span>
+
             <canvas id="previewCanvas"></canvas>
+
         </div>
 
         <div style="text-align:right">
