@@ -1,15 +1,17 @@
-# BinViewer.js
+# binviewer.js
 
 Web-based visualizer for binary files.
 Drag-and-drop a file, and see it as a bitmap image, based on various different settings.
 
-Available at https://github.com/dbrant/BinViewer
+Source code at https://github.com/dbrant/binviewer
+
+Live at https://dbrant.github.io/binviewer/
 
 ----
 
 Copyright &copy; 2022 Dmitry Brant
 
-http://dmitrybrant.com
+https://dmitrybrant.com
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
