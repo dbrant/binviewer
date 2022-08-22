@@ -9,89 +9,88 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="datareader.js"></script>
     <script>
 
         var curRenderer;
 
-        $(document).ready(function() {
+        document.addEventListener("DOMContentLoaded", function(event) { 
+            setup();
+        });
 
-            var holder = $("#holder");
-
+        function setup() {
             if (typeof window.FileReader === 'undefined') {
                 setStatus('Error: File API and/or FileReader API not supported.');
-                $("#topContainer").hide();
+                document.getElementById("topContainer").style.display = "none";
                 return;
             } else {
                 setStatus("");
             }
 
-            $("#fileBrowseInput").on("change", function(event) {
+            document.getElementById("fileBrowseInput").addEventListener("change", function(event) {
                 processFile(event.target.files[0]);
             });
-            $("#fileBrowseButton").on("click", function(event) {
+            document.getElementById("fileBrowseButton").addEventListener("click", function(event) {
                 document.getElementById("fileBrowseInput").click();
             });
 
-            $("#savePngLink").on("click", function(event) {
-                openBase64UrlInNewWindow($("#previewCanvas")[0].toDataURL("image/png"));
+            document.getElementById("savePngLink").addEventListener("click", function(event) {
+                openBase64UrlInNewWindow(document.getElementById("previewCanvas").toDataURL("image/png"));
             });
-            $("#saveJpgLink").on("click", function(event) {
-                openBase64UrlInNewWindow($("#previewCanvas")[0].toDataURL("image/jpeg"));
+            document.getElementById("saveJpgLink").addEventListener("click", function(event) {
+                openBase64UrlInNewWindow(document.getElementById("previewCanvas").toDataURL("image/jpeg"));
             });
 
-            $("#udBmpScale").on("change", function(event) {
-                
-                var canvas = $("#previewCanvas")[0];
-                var scaleVal = $("#udBmpScale")[0].value;
+            document.getElementById("udBmpScale").addEventListener("change", function(ev) {
+                var canvas = document.getElementById("previewCanvas");
+                var scaleVal = document.getElementById("udBmpScale").value;
                 canvas.style.transform = "scale(" + scaleVal + ")";
-
             });
-            $("#udBmpWidth").on("change", function(event) {
+            document.getElementById("udBmpWidth").addEventListener("change", function(ev) {
                 renderCurrentBitmap();
             });
-            $("#udFileOffset").on("change", function(event) {
+            document.getElementById("udFileOffset").addEventListener("change", function(ev) {
                 renderCurrentBitmap();
             });
-            $("#rangeFileOffset").on("input change", function(event) {
-                if (curRenderer) {
-                    var totalLength = curRenderer.length();
-                    var rangeVal = $("#rangeFileOffset")[0].value;
-                    var rangeMax = $("#rangeFileOffset")[0].max;
+            document.getElementById("selectBmpType").addEventListener("change", function(ev) {
+                renderCurrentBitmap();
+            });
+            document.getElementById("rangeFileOffset").addEventListener("input", function(ev) {
+                onScrollBarChanged();
+            });
+            document.getElementById("rangeFileOffset").addEventListener("change", function(ev) {
+                onScrollBarChanged();
+            });
 
-                    $("#udFileOffset")[0].value = parseInt((totalLength * rangeVal / rangeMax));
-                    renderCurrentBitmap();
+            var holder = document.getElementById("holder");
+
+            holder.addEventListener("dragover", function(ev) {
+                ev.preventDefault();
+                if(!holder.classList.contains("dragover")) {
+                    holder.classList.add("hover");
                 }
             });
-            $("#selectBmpType").on("change", function(event) {
-                renderCurrentBitmap();
+        
+            holder.addEventListener("dragend", function(ev) {
+                ev.preventDefault();
+                holder.classList.remove("hover");
             });
 
-            holder.on("dragover", function(event) {
-                        event.preventDefault();
-                        if(!holder.hasClass("dragover")) {
-                            holder.addClass("hover");
-                        }
-                    })
-                    .on("dragend", function(event) {
-                        event.preventDefault();
-                        holder.removeClass("hover");
-                    })
-                    .on("dragleave", function(event) {
-                        event.preventDefault();
-                        holder.removeClass("hover");
-                    })
-                    .on("drop", function(event) {
-                        event.preventDefault();
-                        holder.removeClass("hover");
-                        if (!event.originalEvent.dataTransfer) {
-                            console.log("No data found in dropped object.");
-                            return;
-                        }
-                        processFile(event.originalEvent.dataTransfer.files[0]);
-                    });
-        });
+            holder.addEventListener("dragleave", function(ev) {
+                ev.preventDefault();
+                holder.classList.remove("hover");
+            });
+
+            holder.addEventListener("drop", function(ev) {
+                ev.preventDefault();
+                holder.classList.remove("hover");
+                if (!ev.dataTransfer) {
+                    console.log("No data found in dropped object.");
+                    return;
+                }
+                processFile(ev.dataTransfer.files[0]);
+            });
+        }
 
         function processFile(file) {
             setStatus("");
@@ -106,8 +105,8 @@
                 var reader = new DataReader(dataView);
                 curRenderer = new FileBmpRenderer(reader)
 
-                $("#drophint").hide();
-                $("#previewCanvas").show();
+                document.getElementById("drophint").style.display = "none";
+                document.getElementById("previewCanvas").style.display = "inline";
                 clearCanvas();
 
                 renderCurrentBitmap();
@@ -115,42 +114,49 @@
             reader.readAsArrayBuffer(file);
         }
 
+        function onScrollBarChanged() {
+            if (curRenderer) {
+                var totalLength = curRenderer.length();
+                var rangeVal = document.getElementById("rangeFileOffset").value;
+                var rangeMax = document.getElementById("rangeFileOffset").max;
+
+                document.getElementById("udFileOffset").value = parseInt((totalLength * rangeVal / rangeMax));
+                renderCurrentBitmap();
+            }
+        }
+
         function renderCurrentBitmap() {
             if (!curRenderer) {
                 return;
             }
-            var holder = $("#holder")[0];
+            var holder = document.getElementById("holder");
 
-            var bmpType = $("#selectBmpType")[0].value;
-            var offset = $("#udFileOffset")[0].value;
-            var context = $("#previewCanvas")[0].getContext('2d');
-            var width = $("#udBmpWidth")[0].value;
+            var bmpType = document.getElementById("selectBmpType").value;
+            var offset = document.getElementById("udFileOffset").value;
+            var context = document.getElementById("previewCanvas").getContext('2d');
+            var width = document.getElementById("udBmpWidth").value;
             var height = holder.clientHeight;
 
             resizeCanvas(width, height);
 
             //this.reader.createImageData(imgWidth, imgHeight);
             var imageData = context.getImageData(0, 0, width, height);
-
             curRenderer.render(imageData, width, height, offset, bmpType);
-
-            context.scale(2.0, 2.0);
-
             context.putImageData(imageData, 0, 0);
         }
 
         function setStatus(status) {
-            var fileReaderStatus = $("#fileReaderStatus");
+            var fileReaderStatus = document.getElementById("fileReaderStatus");
             if (status.length > 0) {
-                fileReaderStatus.show();
-                fileReaderStatus.html(status);
+                fileReaderStatus.style.display = "block";
+                fileReaderStatus.innerHTML = status;
             } else {
-                fileReaderStatus.hide();
+                fileReaderStatus.style.display = "none";
             }
         }
 
         function resizeCanvas(width, height) {
-            var canvas = $("#previewCanvas")[0];
+            var canvas = document.getElementById("previewCanvas");
             canvas.width = width;
             canvas.height = height;
             //var scaledHeight = height > 320 ? 320 : height;
@@ -160,7 +166,7 @@
         }
 
         function clearCanvas() {
-            var canvas = $("#previewCanvas")[0];
+            var canvas = document.getElementById("previewCanvas");
             canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
         }
 
