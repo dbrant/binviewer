@@ -111,6 +111,14 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
             }
+        } else if (bmpType === "bgr24") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 3) {
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 3] = 0xFF;
+                bmpPtr += 4;
+            }
         } else if (bmpType === "rgb32") {
             while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
                 bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
