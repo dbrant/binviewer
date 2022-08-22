@@ -119,12 +119,21 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
             }
-        } else if (bmpType === "rgb32") {
+        } else if (bmpType === "rgb_32") {
             while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
                 bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
                 bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
                 bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
                 bmpData[bmpPtr + 3] = 0xFF; dataPtr++;
+                bmpPtr += 4;
+            }
+        } else if (bmpType === "_rgb32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                dataPtr++;
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 3] = 0xFF;
                 bmpPtr += 4;
             }
         } else if (bmpType === "rgba32") {
