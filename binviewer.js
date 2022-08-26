@@ -55,6 +55,11 @@
      document.getElementById("udFileOffset").addEventListener("change", function(ev) {
          renderCurrentBitmap();
      });
+     document.getElementById("udOffsetInc").addEventListener("change", function(ev) {
+        var offsetInc = document.getElementById("udOffsetInc").value;
+        document.getElementById("udFileOffset").step = offsetInc;
+        renderCurrentBitmap();
+    });
      document.getElementById("selectBmpType").addEventListener("change", function(ev) {
          renderCurrentBitmap();
      });
@@ -135,7 +140,13 @@
      var holder = document.getElementById("holder");
 
      var bmpType = document.getElementById("selectBmpType").value;
+     
      var offset = document.getElementById("udFileOffset").value;
+     var offsetInc = document.getElementById("udOffsetInc").value;
+     if (offsetInc > 1) {
+        offset -= (offset % offsetInc);
+     }
+
      var context = document.getElementById("previewCanvas").getContext('2d');
      var width = document.getElementById("udBmpWidth").value;
      var height = holder.clientHeight;
