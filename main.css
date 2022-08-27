@@ -33,7 +33,7 @@ h1 {
     overflow: auto;
 }
 #holder.hover {
-    border: 8px dashed #333;
+    border: 4px dashed #333;
 }
 
 #drophint {
