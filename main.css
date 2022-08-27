@@ -2,12 +2,9 @@
 body {
     margin: 0;
     font-family: sans-serif;
-    background: #454;
-    color: #e0e0e0;
 }
 
 a {
-    color: #fff;
     font-weight: bold;
     text-decoration: none;
 }
@@ -16,22 +13,7 @@ h1 {
     font-family: 'Special Elite',sans-serif;
     font-size: 400%;
     font-weight: normal;
-    color: #fff;
-    background: #686;
     padding: 8px;
-}
-
-#topMenu {
-    background: #575;
-    text-align: right;
-    padding: 8px;
-}
-
-.menuLink {
-    padding: 8px;
-}
-.menuLink.hover {
-    background: #343;
 }
 
 .footer {
@@ -41,8 +23,8 @@ h1 {
 #holder {
     background: url("preview_bak1.png");
     background-clip: padding-box;
-    border: 8px dashed #ccc;
-    border-radius: 8px;
+    border: 4px dashed #ccc;
+    border-radius: 4px;
     margin-bottom: 16px;
     min-height: 240px;
     text-align: center;
@@ -59,7 +41,7 @@ h1 {
     padding-top: 84px;
     width: 100%;
     font-size: 300%;
-    color: #aaa;
+    color: #888;
     text-align: center;
     grid-row: 1;
     grid-column: 1;
@@ -83,18 +65,22 @@ h1 {
     display: none;
 }
 
+.settingscontainer {
+    margin: 16px;
+    padding: 8px;
+    border: 1px solid #888;
+    border-radius: 8px;
+}
+
 .topcontainer {
     margin: 16px;
     padding: 8px;
-    background: #fff;
-    border-radius: 8px;
-    color: #222;
 }
 
 .status {
     font-weight: bold;
-    background: rgba(255, 255, 128, 0.4);
-    border-radius: 4px;
+    border: 1px solid #888;
+    border-radius: 8px;
     margin: 16px;
     padding: 16px;
 }
@@ -104,61 +90,18 @@ h1 {
 }
 
 .buttonLink {
+    border: 1px solid #888;
+    border-radius: 8px;
     padding: 8px;
-    color: #fff;
-    background: #678;
-    border-radius: 3px;
 }
 
 .buttonLink a {
     font-weight: normal;
-}
-
-.browseButton {
-    background: #68e;
+    color: #000;
 }
 
 .previewImage {
     max-width: 400px;
     max-height: 300px;
     vertical-align: middle;
-}
-
-.basicinfo {
-    background: #f4f4f4;
-    color: #444;
-    border-radius: 4px;
-    margin: 16px;
-    padding: 16px;
-}
-.basicinfo a {
-    color: #355;
-    text-decoration: underline;
-}
-
-.detailedinfo {
-    background: #f4f4f4;
-    color: #444;
-    border-radius: 4px;
-    font-family: monospace;
-    margin: 16px;
-    padding: 16px;
-}
-.detailedinfo a {
-    color: #355;
-    text-decoration: underline;
-}
-
-.infoKey {
-    font-weight: bold;
-}
-
-.detailKey {
-    color: #444;
-    font-size: 120%;
-}
-
-.detailValue {
-    font-weight: bold;
-    font-size: 120%;
 }
