@@ -61,11 +61,6 @@ function setup() {
         renderCurrentBitmap();
         updateScrollbar();
     });
-    document.getElementById("udOffsetInc").addEventListener("change", function(ev) {
-        var offsetInc = document.getElementById("udOffsetInc").value;
-        document.getElementById("udFileOffset").step = offsetInc;
-        renderCurrentBitmap();
-    });
     document.getElementById("selectBmpType").addEventListener("change", function(ev) {
         renderCurrentBitmap();
         updateScrollbar();
@@ -80,12 +75,6 @@ function setup() {
         var bytesPerRow = getBytesPerRow();
         var rowsToScroll = 3;
         var delta = Math.sign(ev.deltaY) * bytesPerRow * rowsToScroll;
-
-        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
-        if (offsetInc > 1) {
-            delta = Math.sign(ev.deltaY) * Math.max(offsetInc, Math.abs(delta));
-            delta -= (delta % offsetInc);
-        }
 
         setOffset(currentOffset + delta);
     }, { passive: false });
@@ -117,11 +106,6 @@ function setup() {
         var maxOffset = getMaxOffset();
         var newOffset = maxTop > 0 ? Math.round((newTop / maxTop) * maxOffset) : 0;
 
-        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
-        if (offsetInc > 1) {
-            newOffset -= (newOffset % offsetInc);
-        }
-
         setOffset(newOffset);
     });
 
@@ -145,11 +129,6 @@ function setup() {
 
         var maxOffset = getMaxOffset();
         var newOffset = maxTop > 0 ? Math.round((newTop / maxTop) * maxOffset) : 0;
-
-        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
-        if (offsetInc > 1) {
-            newOffset -= (newOffset % offsetInc);
-        }
 
         setOffset(newOffset);
     });
