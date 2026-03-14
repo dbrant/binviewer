@@ -22,8 +22,44 @@ var scrollbarDragStartY = 0;
 var scrollbarDragStartTop = 0;
 
 document.addEventListener("DOMContentLoaded", function(event) { 
+    setupTheme();
     setup();
 });
+
+function setupTheme() {
+    var saved = localStorage.getItem("theme") || "auto";
+    applyTheme(saved);
+    updateThemeButtons(saved);
+
+    var buttons = document.querySelectorAll("#themeToggle button");
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener("click", function() {
+            var theme = this.getAttribute("data-theme");
+            localStorage.setItem("theme", theme);
+            applyTheme(theme);
+            updateThemeButtons(theme);
+        });
+    }
+}
+
+function updateThemeButtons(theme) {
+    var buttons = document.querySelectorAll("#themeToggle button");
+    for (var i = 0; i < buttons.length; i++) {
+        if (buttons[i].getAttribute("data-theme") === theme) {
+            buttons[i].classList.add("active");
+        } else {
+            buttons[i].classList.remove("active");
+        }
+    }
+}
+
+function applyTheme(theme) {
+    if (theme === "auto") {
+        document.documentElement.removeAttribute("data-theme");
+    } else {
+        document.documentElement.setAttribute("data-theme", theme);
+    }
+}
 
 function setup() {
     if (typeof window.FileReader === 'undefined') {
