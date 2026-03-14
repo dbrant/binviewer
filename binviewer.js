@@ -16,6 +16,10 @@
  */
 
 var curRenderer;
+var currentOffset = 0;
+var scrollbarDragging = false;
+var scrollbarDragStartY = 0;
+var scrollbarDragStartTop = 0;
 
 document.addEventListener("DOMContentLoaded", function(event) { 
     setup();
@@ -53,7 +57,9 @@ function setup() {
         renderCurrentBitmap();
     });
     document.getElementById("udFileOffset").addEventListener("change", function(ev) {
+        currentOffset = parseInt(document.getElementById("udFileOffset").value) || 0;
         renderCurrentBitmap();
+        updateScrollbar();
     });
     document.getElementById("udOffsetInc").addEventListener("change", function(ev) {
         var offsetInc = document.getElementById("udOffsetInc").value;
@@ -62,15 +68,91 @@ function setup() {
     });
     document.getElementById("selectBmpType").addEventListener("change", function(ev) {
         renderCurrentBitmap();
-    });
-    document.getElementById("rangeFileOffset").addEventListener("input", function(ev) {
-        onScrollBarChanged();
-    });
-    document.getElementById("rangeFileOffset").addEventListener("change", function(ev) {
-        onScrollBarChanged();
+        updateScrollbar();
     });
 
     var holder = document.getElementById("holder");
+
+    // Mouse wheel scrolling on the holder area
+    holder.addEventListener("wheel", function(ev) {
+        if (!curRenderer) return;
+        ev.preventDefault();
+        var bytesPerRow = getBytesPerRow();
+        var rowsToScroll = 3;
+        var delta = Math.sign(ev.deltaY) * bytesPerRow * rowsToScroll;
+
+        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
+        if (offsetInc > 1) {
+            delta = Math.sign(ev.deltaY) * Math.max(offsetInc, Math.abs(delta));
+            delta -= (delta % offsetInc);
+        }
+
+        setOffset(currentOffset + delta);
+    }, { passive: false });
+
+    // Custom scrollbar drag handling
+    var scrollbarThumb = document.getElementById("scrollbarThumb");
+    var scrollbar = document.getElementById("scrollbar");
+
+    scrollbarThumb.addEventListener("mousedown", function(ev) {
+        ev.preventDefault();
+        scrollbarDragging = true;
+        scrollbarDragStartY = ev.clientY;
+        scrollbarDragStartTop = scrollbarThumb.offsetTop;
+        scrollbarThumb.classList.add("dragging");
+    });
+
+    document.addEventListener("mousemove", function(ev) {
+        if (!scrollbarDragging || !curRenderer) return;
+        ev.preventDefault();
+        var scrollbar = document.getElementById("scrollbar");
+        var thumb = document.getElementById("scrollbarThumb");
+        var trackHeight = scrollbar.clientHeight;
+        var thumbHeight = thumb.clientHeight;
+        var maxTop = trackHeight - thumbHeight;
+
+        var deltaY = ev.clientY - scrollbarDragStartY;
+        var newTop = Math.max(0, Math.min(maxTop, scrollbarDragStartTop + deltaY));
+
+        var maxOffset = getMaxOffset();
+        var newOffset = maxTop > 0 ? Math.round((newTop / maxTop) * maxOffset) : 0;
+
+        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
+        if (offsetInc > 1) {
+            newOffset -= (newOffset % offsetInc);
+        }
+
+        setOffset(newOffset);
+    });
+
+    document.addEventListener("mouseup", function(ev) {
+        if (scrollbarDragging) {
+            scrollbarDragging = false;
+            document.getElementById("scrollbarThumb").classList.remove("dragging");
+        }
+    });
+
+    // Click on track (outside thumb) to jump
+    scrollbar.addEventListener("mousedown", function(ev) {
+        if (ev.target !== scrollbar || !curRenderer) return;
+        var thumb = document.getElementById("scrollbarThumb");
+        var trackHeight = scrollbar.clientHeight;
+        var thumbHeight = thumb.clientHeight;
+        var maxTop = trackHeight - thumbHeight;
+
+        var clickY = ev.clientY - scrollbar.getBoundingClientRect().top - thumbHeight / 2;
+        var newTop = Math.max(0, Math.min(maxTop, clickY));
+
+        var maxOffset = getMaxOffset();
+        var newOffset = maxTop > 0 ? Math.round((newTop / maxTop) * maxOffset) : 0;
+
+        var offsetInc = parseInt(document.getElementById("udOffsetInc").value) || 1;
+        if (offsetInc > 1) {
+            newOffset -= (newOffset % offsetInc);
+        }
+
+        setOffset(newOffset);
+    });
 
     holder.addEventListener("dragover", function(ev) {
         ev.preventDefault();
@@ -115,27 +197,74 @@ function processFile(file) {
 
         document.getElementById("drophint").style.display = "none";
         document.getElementById("previewCanvas").style.display = "inline";
+        document.getElementById("scrollbar").style.display = "block";
         clearCanvas();
 
+        currentOffset = 0;
+        document.getElementById("udFileOffset").value = 0;
         renderCurrentBitmap();
+        updateScrollbar();
     };
     reader.readAsArrayBuffer(file);
 }
 
-function onScrollBarChanged() {
-    if (curRenderer) {
-        var totalLength = curRenderer.length();
-        var rangeVal = document.getElementById("rangeFileOffset").value;
-        var rangeMax = document.getElementById("rangeFileOffset").max;
+function getBytesPerPixel() {
+    var bmpType = document.getElementById("selectBmpType").value;
+    if (bmpType === "rgb24" || bmpType === "bgr24") return 3;
+    if (bmpType === "rgb_32" || bmpType === "_rgb32" || bmpType === "rgba32" || bmpType === "argb32") return 4;
+    if (bmpType === "565" || bmpType === "555") return 2;
+    if (bmpType === "grey8") return 1;
+    if (bmpType === "ega4") return 0.5;
+    if (bmpType === "mono1" || bmpType === "mono1inv") return 0.125;
+    return 1;
+}
 
-        var offset = parseInt((totalLength * rangeVal / rangeMax));
-        var offsetInc = document.getElementById("udOffsetInc").value;
-        if (offsetInc > 1) {
-            offset -= (offset % offsetInc);
-        }
-        document.getElementById("udFileOffset").value = offset;
-        renderCurrentBitmap();
-    }
+function getBytesPerRow() {
+    var width = parseInt(document.getElementById("udBmpWidth").value) || 320;
+    return Math.max(1, Math.ceil(width * getBytesPerPixel()));
+}
+
+function getVisibleBytes() {
+    var holder = document.getElementById("holder");
+    var height = holder.clientHeight;
+    return getBytesPerRow() * height;
+}
+
+function getMaxOffset() {
+    if (!curRenderer) return 0;
+    var total = curRenderer.length();
+    var visible = getVisibleBytes();
+    return Math.max(0, total - visible);
+}
+
+function setOffset(newOffset) {
+    var maxOffset = getMaxOffset();
+    newOffset = Math.max(0, Math.min(maxOffset, newOffset));
+    currentOffset = newOffset;
+    document.getElementById("udFileOffset").value = newOffset;
+    renderCurrentBitmap();
+    updateScrollbar();
+}
+
+function updateScrollbar() {
+    if (!curRenderer) return;
+    var scrollbar = document.getElementById("scrollbar");
+    var thumb = document.getElementById("scrollbarThumb");
+    var trackHeight = scrollbar.clientHeight;
+
+    var totalBytes = curRenderer.length();
+    var visibleBytes = getVisibleBytes();
+
+    // Thumb height proportional to visible / total
+    var thumbRatio = Math.min(1, visibleBytes / totalBytes);
+    var thumbHeight = Math.max(20, Math.round(trackHeight * thumbRatio));
+    thumb.style.height = thumbHeight + "px";
+
+    // Thumb position
+    var maxOffset = getMaxOffset();
+    var maxTop = trackHeight - thumbHeight;
+    var thumbTop = maxOffset > 0 ? Math.round((currentOffset / maxOffset) * maxTop) : 0;
+    thumb.style.top = thumbTop + "px";
 }
 
 function renderCurrentBitmap() {
@@ -145,14 +274,13 @@ function renderCurrentBitmap() {
     var holder = document.getElementById("holder");
 
     var bmpType = document.getElementById("selectBmpType").value;
-    var offset = document.getElementById("udFileOffset").value;
+    var offset = currentOffset;
     var context = document.getElementById("previewCanvas").getContext('2d');
     var width = document.getElementById("udBmpWidth").value;
     var height = holder.clientHeight;
 
     resizeCanvas(width, height);
 
-    //this.reader.createImageData(imgWidth, imgHeight);
     var imageData = context.getImageData(0, 0, width, height);
     curRenderer.render(imageData, width, height, offset, bmpType);
     context.putImageData(imageData, 0, 0);
