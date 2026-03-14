@@ -33,6 +33,14 @@ h1 {
     overflow: hidden;
     position: relative;
 }
+
+#holder #previewCanvas {
+    flex: 0 0 auto;
+}
+
+#holder .custom-scrollbar {
+    margin-left: auto;
+}
 #holder.hover {
     border: 4px dashed #333;
 }
@@ -50,8 +58,6 @@ h1 {
 }
 
 #previewCanvas {
-    flex: 1;
-    min-width: 0;
     image-rendering: pixelated;
     transform-origin: left top;
 }
