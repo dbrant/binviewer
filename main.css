@@ -81,7 +81,7 @@ h1 {
     font-family: 'Special Elite',sans-serif;
     font-size: 400%;
     font-weight: normal;
-    padding: 8px;
+    padding-top: 32px;
 }
 
 .footer {
@@ -223,8 +223,8 @@ select, input[type="number"] {
 
 .theme-toggle {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 8px;
+    right: 8px;
     display: flex;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -232,8 +232,8 @@ select, input[type="number"] {
 }
 
 .theme-toggle button {
-    font-size: 18px;
-    padding: 4px 10px;
+    font-size: 14px;
+    padding: 4px;
     border: none;
     background: var(--input-bg);
     color: var(--input-fg);
