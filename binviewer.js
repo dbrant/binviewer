@@ -15,7 +15,8 @@
  limitations under the License.
  */
 
-var curRenderer;
+var curFile = null;
+var curFileSize = 0;
 var currentOffset = 0;
 var scrollbarDragging = false;
 var scrollbarDragStartY = 0;
@@ -106,7 +107,7 @@ function setup() {
 
     // Mouse wheel scrolling on the holder area
     holder.addEventListener("wheel", function(ev) {
-        if (!curRenderer) return;
+        if (!curFile) return;
         ev.preventDefault();
         var bytesPerRow = getBytesPerRow();
         var rowsToScroll = 3;
@@ -128,7 +129,7 @@ function setup() {
     });
 
     document.addEventListener("mousemove", function(ev) {
-        if (!scrollbarDragging || !curRenderer) return;
+        if (!scrollbarDragging || !curFile) return;
         ev.preventDefault();
         var scrollbar = document.getElementById("scrollbar");
         var thumb = document.getElementById("scrollbarThumb");
@@ -154,7 +155,7 @@ function setup() {
 
     // Click on track (outside thumb) to jump
     scrollbar.addEventListener("mousedown", function(ev) {
-        if (ev.target !== scrollbar || !curRenderer) return;
+        if (ev.target !== scrollbar || !curFile) return;
         var thumb = document.getElementById("scrollbarThumb");
         var trackHeight = scrollbar.clientHeight;
         var thumbHeight = thumb.clientHeight;
@@ -203,24 +204,19 @@ function processFile(file) {
         setStatus("Whatever was dropped is not a file.");
         return;
     }
-    var reader = new FileReader();
-    reader.onload = function (event) {
-        var buf = event.target.result;
-        var dataView = new DataView(buf);
-        var reader = new DataReader(dataView);
-        curRenderer = new FileBmpRenderer(reader)
 
-        document.getElementById("drophint").style.display = "none";
-        document.getElementById("previewCanvas").style.display = "inline";
-        document.getElementById("scrollbar").style.display = "block";
-        clearCanvas();
+    curFile = file;
+    curFileSize = file.size;
 
-        currentOffset = 0;
-        document.getElementById("udFileOffset").value = 0;
-        renderCurrentBitmap();
-        updateScrollbar();
-    };
-    reader.readAsArrayBuffer(file);
+    document.getElementById("drophint").style.display = "none";
+    document.getElementById("previewCanvas").style.display = "inline";
+    document.getElementById("scrollbar").style.display = "block";
+    clearCanvas();
+
+    currentOffset = 0;
+    document.getElementById("udFileOffset").value = 0;
+    renderCurrentBitmap();
+    updateScrollbar();
 }
 
 function getBytesPerPixel() {
@@ -246,8 +242,8 @@ function getVisibleBytes() {
 }
 
 function getMaxOffset() {
-    if (!curRenderer) return 0;
-    var total = curRenderer.length();
+    if (!curFile) return 0;
+    var total = curFileSize;
     var visible = getVisibleBytes();
     return Math.max(0, total - visible);
 }
@@ -262,12 +258,12 @@ function setOffset(newOffset) {
 }
 
 function updateScrollbar() {
-    if (!curRenderer) return;
+    if (!curFile) return;
     var scrollbar = document.getElementById("scrollbar");
     var thumb = document.getElementById("scrollbarThumb");
     var trackHeight = scrollbar.clientHeight;
 
-    var totalBytes = curRenderer.length();
+    var totalBytes = curFileSize;
     var visibleBytes = getVisibleBytes();
 
     // Thumb height proportional to visible / total
@@ -283,22 +279,35 @@ function updateScrollbar() {
 }
 
 function renderCurrentBitmap() {
-    if (!curRenderer) {
+    if (!curFile) {
         return;
     }
     var holder = document.getElementById("holder");
 
     var bmpType = document.getElementById("selectBmpType").value;
     var offset = currentOffset;
-    var context = document.getElementById("previewCanvas").getContext('2d');
-    var width = document.getElementById("udBmpWidth").value;
+    var width = parseInt(document.getElementById("udBmpWidth").value) || 320;
     var height = holder.clientHeight;
 
-    resizeCanvas(width, height);
+    // Calculate how many bytes we need for this viewport
+    var bytesNeeded = Math.ceil(width * height * getBytesPerPixel()) + 16;
+    var sliceEnd = Math.min(offset + bytesNeeded, curFileSize);
 
-    var imageData = context.getImageData(0, 0, width, height);
-    curRenderer.render(imageData, width, height, offset, bmpType);
-    context.putImageData(imageData, 0, 0);
+    var blob = curFile.slice(offset, sliceEnd);
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        var buf = event.target.result;
+        var dataView = new DataView(buf);
+        var dataReader = new DataReader(dataView);
+        var renderer = new FileBmpRenderer(dataReader);
+
+        var context = document.getElementById("previewCanvas").getContext('2d');
+        resizeCanvas(width, height);
+        var imageData = context.getImageData(0, 0, width, height);
+        renderer.render(imageData, width, height, 0, bmpType);
+        context.putImageData(imageData, 0, 0);
+    };
+    reader.readAsArrayBuffer(blob);
 }
 
 function setStatus(status) {
