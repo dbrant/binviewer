@@ -222,7 +222,7 @@ function processFile(file) {
 function getBytesPerPixel() {
     var bmpType = document.getElementById("selectBmpType").value;
     if (bmpType === "rgb24" || bmpType === "bgr24") return 3;
-    if (bmpType === "rgb_32" || bmpType === "_rgb32" || bmpType === "rgba32" || bmpType === "argb32") return 4;
+    if (bmpType === "rgb_32" || bmpType === "_rgb32" || bmpType === "rgba32" || bmpType === "argb32" || bmpType === "bgr_32" || bmpType === "_bgr32" || bmpType === "abgr32" || bmpType === "bgra32") return 4;
     if (bmpType === "565" || bmpType === "555") return 2;
     if (bmpType === "grey8") return 1;
     if (bmpType === "ega4") return 0.5;

@@ -152,6 +152,39 @@ var FileBmpRenderer = function(dReader) {
                 bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
                 bmpPtr += 4;
             }
+        } else if (bmpType === "bgr_32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 3] = 0xFF; dataPtr++;
+                bmpPtr += 4;
+            }
+        } else if (bmpType === "_bgr32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                dataPtr++;
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 3] = 0xFF;
+                bmpPtr += 4;
+            }
+        } else if (bmpType === "bgra32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 3] = this.reader.byteAt(dataPtr++);
+                bmpPtr += 4;
+            }
+        } else if (bmpType === "abgr32") {
+            while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 4) {
+                bmpData[bmpPtr + 3] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 2] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr + 1] = this.reader.byteAt(dataPtr++);
+                bmpData[bmpPtr] = this.reader.byteAt(dataPtr++);
+                bmpPtr += 4;
+            }
         } else if (bmpType === "565") {
             while (bmpPtr < maxBmpPtr && dataPtr < maxDataPtr - 2) {
                 var c = this.reader.byteAt(dataPtr++);
